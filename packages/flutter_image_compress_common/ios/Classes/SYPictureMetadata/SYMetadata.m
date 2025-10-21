@@ -10,9 +10,10 @@
 #import "SYMetadata.h"
 #import "NSDictionary+SY.h"
 
-#if !TARGET_OS_TV
-#import <AssetsLibrary/AssetsLibrary.h>
-#endif
+// Deprecated iOS 17 APIs removed
+//#if !TARGET_OS_TV
+//#import <AssetsLibrary/AssetsLibrary.h>
+//#endif
 
 #define SYKeyForMetadata(name)          NSStringFromSelector(@selector(metadata##name))
 #define SYDictionaryForMetadata(name)   SYPaste(SYPaste(kCGImageProperty,name),Dictionary)
@@ -46,20 +47,15 @@
     return instance;
 }
 
-+ (instancetype)metadataWithAsset:(ALAsset *)asset
+// Deprecated iOS 17 APIs removed
++ (instancetype)metadataWithAsset:(id)asset
 {
-#if !TARGET_OS_TV
-    ALAssetRepresentation *representation = [asset defaultRepresentation];
-    return [self metadataWithDictionary:[representation metadata]];
-#else
     return nil;
-#endif
 }
 
 + (instancetype)metadataWithAssetURL:(NSURL *)assetURL
 {
-    NSDictionary *dictionary = [self dictionaryWithAssetURL:assetURL];
-    return [self metadataWithDictionary:dictionary];
+    return [self metadataWithDictionary:nil];
 }
 
 + (instancetype)metadataWithFileURL:(NSURL *)fileURL
@@ -110,7 +106,6 @@
 
 #pragma mark - Writing
 
-// https://github.com/Nikita2k/SimpleExif/blob/master/Classes/ios/UIImage%2BExif.m
 + (NSData *)dataWithImageData:(NSData *)imageData andMetadata:(SYMetadata *)metadata
 {
     CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef) imageData, NULL);
@@ -120,8 +115,6 @@
     }
     
     CFStringRef sourceImageType = CGImageSourceGetType(source);
-    
-    // create a new data object and write the new image into it
     NSMutableData *data = [NSMutableData data];
     CGImageDestinationRef destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)data, sourceImageType, 1, NULL);
     
@@ -131,7 +124,6 @@
         return nil;
     }
     
-    // add the image contained in the image source to the destination, overidding the old metadata with our modified metadata
     CGImageDestinationAddImageFromSource(destination, source, 0, (__bridge CFDictionaryRef)metadata.generatedDictionary);
     BOOL success = CGImageDestinationFinalize(destination);
     
@@ -148,27 +140,7 @@
 
 + (NSDictionary *)dictionaryWithAssetURL:(NSURL *)assetURL
 {
-#if !TARGET_OS_TV
-    __block ALAsset *assetAtUrl = nil;
-    ALAssetsLibrary* library = [[ALAssetsLibrary alloc] init];
-    
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    [library assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        assetAtUrl = asset;
-        dispatch_semaphore_signal(sema);
-    } failureBlock:^(NSError *error) {
-        dispatch_semaphore_signal(sema);
-    }];
-    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-    
-    if (!assetAtUrl)
-        return nil;
-    
-    ALAssetRepresentation *representation = [assetAtUrl defaultRepresentation];
-    return [representation metadata];
-#else
     return nil;
-#endif
 }
 
 #pragma mark - Mapping
