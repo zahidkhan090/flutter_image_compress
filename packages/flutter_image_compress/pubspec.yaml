@@ -1,3 +1,4 @@
+publish_to: 'none'
 name: flutter_image_compress
 description: Compress Pictures. Can effectively reduce the size of the transmission.
 repository: https://github.com/fluttercandies/flutter_image_compress
@@ -11,10 +12,12 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_image_compress_platform_interface: ^1.0.5
-  flutter_image_compress_common: ^1.0.5
+  flutter_image_compress_common:
+    path: ../flutter_image_compress_common
   flutter_image_compress_web: ^0.1.5
   flutter_image_compress_macos: ^1.0.3
   flutter_image_compress_ohos: ^0.0.3
+
 
 flutter:
   plugin:
